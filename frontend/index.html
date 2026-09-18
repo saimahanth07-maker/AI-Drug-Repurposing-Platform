@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Drug Repurposing Platform</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        header {
+            background: #2563eb;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            font-size: 16px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 40px auto;
+        }
+
+        .search-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .search-section h2 {
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 14px;
+            font-size: 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .search-box input:focus {
+            border-color: #2563eb;
+        }
+
+        .search-box button {
+            padding: 14px 25px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .search-box button:hover {
+            background: #1d4ed8;
+        }
+
+        #result {
+            margin-top: 25px;
+        }
+
+        .drug-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .drug-card h2 {
+            color: #2563eb;
+            margin-bottom: 20px;
+        }
+
+        .info {
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .info:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            color: #64748b;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        footer {
+            text-align: center;
+            color: #64748b;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 600px) {
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .search-box button {
+                width: 100%;
+            }
+
+            header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>🧬 AI Drug Repurposing Platform</h1>
+        <p>Search and explore drug information</p>
+    </header>
+
+    <div class="container">
+
+        <div class="search-section">
+
+            <h2>🔎 Search for a Drug</h2>
+
+            <div class="search-box">
+
+                <input
+                    type="text"
+                    id="drugInput"
+                    placeholder="Enter drug name, e.g. Naproxen"
+                >
+
+                <button onclick="searchDrug()">
+                    Search
+                </button>
+
+            </div>
+
+            <div id="result"></div>
+
+        </div>
+
+    </div>
+
+    <footer>
+        AI Drug Repurposing Platform
+    </footer>
+
+
+    <script>
+
+        async function searchDrug() {
+
+            const drug = document
+                .getElementById("drugInput")
+                .value
+                .trim();
+
+            const result = document.getElementById("result");
+
+            if (drug === "") {
+
+                result.innerHTML =
+                    '<div class="error">Please enter a drug name.</div>';
+
+                return;
+            }
+
+            result.innerHTML =
+                '<p class="loading">🔄 Searching...</p>';
+
+            try {
+
+                const response = await fetch(
+                    `http://127.0.0.1:8000/drugs/search?brand=${encodeURIComponent(drug)}`
+                );
+
+                if (!response.ok) {
+                    throw new Error("Server error");
+                }
+
+                const data = await response.json();
+
+                if (data.length === 0) {
+
+                    result.innerHTML =
+                        `<div class="error">
+                            Drug "${drug}" was not found.
+                        </div>`;
+
+                    return;
+                }
+
+                const d = data[0];
+                const repurposeResponse = await fetch(
+    `http://127.0.0.1:8000/drugs/repurpose?brand=${encodeURIComponent(drug)}`
+);
+
+const repurposeData = await repurposeResponse.json();
+
+                result.innerHTML = `
+
+                    <div class="drug-card">
+
+                        <h2>💊 Drug Information</h2>
+
+                        <div class="info">
+                            <span class="label">Brand Name:</span>
+                            ${d.brand_name || "N/A"}
+                        </div>
+                       <div class="repurposing-section">
+
+    <h3>🔬 Possible Repurposing Research</h3>
+
+    ${
+        repurposeData.results.length > 0
+        ? repurposeData.results.map(item => `
+            
+            <div class="repurpose-card">
+
+                <div class="info">
+                    <span class="label">Possible Indication:</span>
+                    ${item.possible_indication || "N/A"}
+                </div>
+
+                <div class="info">
+                    <span class="label">Evidence Type:</span>
+                    ${item.evidence_type || "N/A"}
+                </div>
+
+                <div class="info">
+                    <span class="label">Status:</span>
+                    ${item.status || "N/A"}
+                </div>
+
+                <div class="info">
+                    <span class="label">Research Note:</span>
+                    ${item.source_note || "N/A"}
+                </div>
+
+            </div>
+
+        `).join("")
+        : `<p>No repurposing research found for this drug.</p>`
+    }
+
+</div>
+                        <div class="info">
+                            <span class="label">Generic Name:</span>
+                            ${d.generic_name || "N/A"}
+                        </div>
+
+                        <div class="info">
+                            <span class="label">Manufacturer:</span>
+                            ${d.manufacturer || "N/A"}
+                        </div>
+
+                        <div class="info">
+                            <span class="label">Purpose:</span>
+                            ${d.purpose || "N/A"}
+                        </div>
+
+                    </div>
+                `;
+
+            } catch (error) {
+
+                console.error(error);
+
+                result.innerHTML = `
+                    <div class="error">
+                        Unable to connect to the backend.
+                        Please make sure FastAPI is running.
+                    </div>
+                `;
+            }
+        }
+
+
+        document
+            .getElementById("drugInput")
+            .addEventListener("keypress", function(event) {
+
+                if (event.key === "Enter") {
+                    searchDrug();
+                }
+
+            });
+
+    </script>
+
+</body>
+
+</html>

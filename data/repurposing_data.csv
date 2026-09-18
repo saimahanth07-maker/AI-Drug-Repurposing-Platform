@@ -1,0 +1,6 @@
+drug,possible_indication,evidence_type,status,source_note
+Naproxen,SARS-CoV-2 infection,Preclinical research,Investigational,Naproxen was studied for antiviral activity against SARS-CoV-2
+Naproxen,Neoplastic fever,Clinical research,Investigational,Naproxen has been studied for treatment of neoplastic fever
+Naproxen,Lynch syndrome colorectal cancer prevention,Clinical research,Investigational,Naproxen was studied as a chemoprevention strategy in Lynch syndrome
+Sildenafil,Erectile dysfunction,Historical repurposing,Approved,Sildenafil was originally investigated for other cardiovascular uses before erectile dysfunction became an indication
+Azathioprine,Organ transplantation,Historical repurposing,Approved,Azathioprine has been used as an immunosuppressive drug in transplantation
